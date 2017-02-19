@@ -1,0 +1,62 @@
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.1.RELEASE")
+        classpath('org.springframework:springloaded:1.2.6.RELEASE')
+    }
+}
+
+apply plugin: 'groovy'
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'application'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'war'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+idea {
+    module {
+        inheritOutputDirs = false
+        outputDir = file("$buildDir/classes/main/")
+    }
+}
+
+mainClassName = 'gcms.youtube2podcast.Main'
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.3.11'
+
+    compile("org.springframework.boot:spring-boot-devtools")
+
+    // Core Library
+    compile 'com.github.gcms:vget:19b7bdb006'
+    compile 'net.bramp.ffmpeg:ffmpeg:0.6.1'
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.10.2'
+    compile group: 'rome', name: 'rome', version: '1.0'
+
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+
+
+    // tag::jetty[]
+    compile("org.springframework.boot:spring-boot-starter-web") {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+    compile("org.springframework.boot:spring-boot-starter-jetty")
+    // end::jetty[]
+    // tag::actuator[]
+    compile("org.springframework.boot:spring-boot-starter-actuator")
+    // end::actuator[]
+}
