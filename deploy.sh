@@ -12,11 +12,11 @@ if [ ! "$TARGET_DIR" ] || [ ! "$APP_USER" ]; then
 fi
 
 
+BASEDIR=$(dirname $0)
 cd $BASEDIR
 BASEDIR=$PWD
 
 APP_NAME=$(basename $BASEDIR)
-BASEDIR=$(dirname $0)
 SOURCE_JAR=$BASEDIR/build/libs/$APP_NAME.jar
 if [ ! -f "$SOURCE_JAR" ]; then
   echo "File '$SOURCE_JAR' not found! Needs to build before deploying"

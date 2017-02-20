@@ -25,8 +25,7 @@ if [ ! -d "$BUILD_DIR" ]; then
 fi
 
 cd $BUILD_DIR
-git fetch
-GIT_PULL=$(git merge | egrep "[A-Za-z0-9]+\.\.[A-Z0-9a-z]+")
+GIT_PULL=$(git pull | egrep "[A-Za-z0-9]+\.\.[A-Z0-9a-z]+")
 if [ "$GIT_PULL" ] && [ "$?" == "0"  ]; then
   echo Updated: $GIT_PULL
 fi
