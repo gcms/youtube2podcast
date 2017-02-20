@@ -90,8 +90,12 @@ class Controller {
         String ua = request.getHeader('User-Agent')
         log.info ("User agent: ${ua}")
 
-        if (ua != null && ua.find(~/Beyond|stagefright/))
-            return files.find { it.stream instanceof YouTubeInfo.StreamCombined && it.stream.c == YouTubeInfo.Container.GP3}
+        if (ua != null && ua.contains('stagefright')) {
+            def gp3 = files.find { it.stream instanceof YouTubeInfo.StreamCombined && it.stream.c == YouTubeInfo.Container.GP3}
+            if (gp3 != null)
+                return gp3
+        }
+
 
         files.find { it.stream instanceof YouTubeInfo.StreamAudio } ?: files.find { it.stream instanceof YouTubeInfo.StreamCombined }
     }
@@ -183,9 +187,10 @@ class Controller {
     @RequestMapping(value = "/audio/{id}", method = RequestMethod.GET)
     public void audio(@PathVariable String id) {
         logRequest()
-        String url = findUrl(id).url
+        def file = findUrl(id)
+        log.info "Selected file: ${file.stream} [${file.url}]"
 
-        response.sendRedirect(url)
+        response.sendRedirect(file.url.toString())
         return
 
 
