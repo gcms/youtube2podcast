@@ -90,7 +90,7 @@ class Controller {
         String ua = request.getHeader('User-Agent')
         log.info ("User agent: ${ua}")
 
-        if (ua != null && ua.contains('Beyond'))
+        if (ua != null && ua.find(~/Beyond|stagefright/))
             return files.find { it.stream instanceof YouTubeInfo.StreamCombined && it.stream.c == YouTubeInfo.Container.GP3}
 
         files.find { it.stream instanceof YouTubeInfo.StreamAudio } ?: files.find { it.stream instanceof YouTubeInfo.StreamCombined }
