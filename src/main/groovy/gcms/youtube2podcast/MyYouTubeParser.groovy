@@ -17,10 +17,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 class MyYouTubeParser extends YouTubeParser {
 
     List<VideoDownload> files = []
+    Comparator<? super VideoDownload> comparator = new AverageQualityFirst()
 
     static class AverageQualityFirst implements Comparator<VideoDownload> {
         int isVideo(VideoDownload video) {
-            video.stream instanceof StreamVideo ? 0 : 1
+            video.stream instanceof StreamVideo ? 0 : video.stream instanceof YouTubeInfo.StreamCombined ? 1 : 2
         }
 
         int ordinal(VideoDownload o1) {
@@ -52,6 +53,8 @@ class MyYouTubeParser extends YouTubeParser {
 
     public List<VideoFileInfo> extract(final VideoInfo vinfo, final AtomicBoolean stop, final Runnable notify) {
         List<VideoDownload> videos = extractLinks((YouTubeInfo) vinfo, stop, notify);
+        files.addAll(videos)
+        Collections.sort(files, comparator)
 
         if (videos.size() == 0) {
             // rare error:
@@ -75,9 +78,6 @@ class MyYouTubeParser extends YouTubeParser {
 
         Collections.sort(videos, new AverageQualityFirst());
         Collections.sort(audios, new AverageQualityFirst());
-
-        files.addAll(videos)
-        files.addAll(audios)
 
         for (int i = 0; i < videos.size();) {
             VideoDownload v = videos.get(i);
