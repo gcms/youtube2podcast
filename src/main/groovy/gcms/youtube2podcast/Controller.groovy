@@ -156,6 +156,8 @@ class Controller {
 
     @RequestMapping(value = "/audio/{id}", method = RequestMethod.HEAD)
     public void audioHeader(@PathVariable String id) {
+        logRequest()
+
         response.setHeader('X-Application-Context', baseURL)
         def info = audio.queryFile(id)
 
@@ -166,15 +168,26 @@ class Controller {
         }
     }
 
+    public void logRequest() {
+        log.info(request.requestURI + " " + request.headerNames.toList().collectEntries() {
+            new MapEntry(it, request.getHeader(it))
+        })
+    }
+
+    public void logReponse() {
+        log.info(response.status +  " " + response.headerNames.toList().collectEntries() {
+            new MapEntry(it, response.getHeader(it))
+        })
+    }
+
     @RequestMapping(value = "/audio/{id}", method = RequestMethod.GET)
     public void audio(@PathVariable String id) {
-        log.info(request.headerNames.collect() { new MapEntry(it, request.getHeader(it)) }.toString())
+        logRequest()
         String url = findUrl(id).url
 
         response.sendRedirect(url)
         return
 
-        log.info(request.headerNames.collect() { new MapEntry(it, request.getHeader(it)) }.toString())
 
         if (range != null) {
             sendPartial(audio.queryFile(id), range)
@@ -222,7 +235,7 @@ class Controller {
 
             StreamUtils.copyRange(new BufferedInputStream(action.stream), response.outputStream, start, end)
 
-        log.info(response.headerNames.collect() { new MapEntry(it, response.getHeader(it)) }.toString())
+        logResponse()
     }
 
     private boolean canResolve(String id, AudioResult action) {

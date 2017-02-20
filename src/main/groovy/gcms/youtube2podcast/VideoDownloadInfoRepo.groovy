@@ -32,7 +32,7 @@ class VideoDownloadInfoRepo implements Iterable<VideoDownloadInfo> {
         File infoFile = getInfoFile(id)
 
         synchronized (infoFile.path) {
-            log.info ("Reading ${id} from ${infoFile.path}")
+            log.debug ("Reading ${id} from ${infoFile.path}")
 
             if (infoFile.exists())
                 return mapper.readValue(infoFile.text, VideoDownloadInfo)
@@ -45,7 +45,7 @@ class VideoDownloadInfoRepo implements Iterable<VideoDownloadInfo> {
     void update(VideoDownloadInfo info) {
         File infoFile = getInfoFile(info.id)
         synchronized (infoFile.path) {
-            log.info ("Saving ${info.dump()} to ${infoFile.path}")
+            log.debug ("Saving ${info.dump()} to ${infoFile.path}")
             info.lastUpdated = new Date()
             infoFile.text = mapper.writeValueAsString(info)
         }
