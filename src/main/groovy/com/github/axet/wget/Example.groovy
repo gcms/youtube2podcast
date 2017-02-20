@@ -38,15 +38,14 @@ class Example {
                 if (target.exists()) target.delete()
 
                 def fos = new FileOutputStream(target)
-                def pis = new PipedInputStream()
-                def pos = new PipedOutputStream(pis)
-
+//                def pis = new PipedInputStream()
+//                def pos = new PipedOutputStream(pis)
 
 
                 long lastUpdate = System.currentTimeMillis()
-                def wget = new MyDirect(new DownloadInfo(it.url), target)
+                def wget = new MyDirect(new MyVideoFileInfo(it.url), target)
 
-                wget.download(new MulticastStream(fos), new AtomicBoolean(false)) {
+                wget.download(fos, new AtomicBoolean(false)) {
                     if (System.currentTimeMillis() - lastUpdate > 10 * 1000) {
                         lastUpdate = System.currentTimeMillis()
                         println "${wget.info.state} ${nf.format(wget.info.count/1024/1024)}M"// / ${nf.format(wget.info.length/1024/1024)}M"
