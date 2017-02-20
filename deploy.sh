@@ -12,10 +12,11 @@ sudo chown -R $APP_USER:$APP_USER $TARGET_DIR
 
 cd $TARGET_DIR
 
+rm -rf $TARGET_JAR
 sudo -u $APP_USER ./gradlew build
+if [ "$?" != "0" ]; then exit $?; fi
 
-#cp -v ./build/libs/$APP_NAME.jar $TARGET_JAR
-
+cp -v ./build/libs/$APP_NAME.jar $TARGET_JAR
 rm -f /etc/init.d/$APP_NAME
 ln -s $TARGET_JAR /etc/init.d/$APP_NAME
 
@@ -26,3 +27,4 @@ systemctl daemon-reload
 
 service $APP_NAME status
 service $APP_NAME restart
+service $APP_NAME status
