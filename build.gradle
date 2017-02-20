@@ -34,6 +34,10 @@ idea {
     }
 }
 
+springBoot {
+    executable = true
+}
+
 mainClassName = 'gcms.youtube2podcast.Main'
 
 dependencies {
