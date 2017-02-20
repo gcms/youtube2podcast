@@ -1,6 +1,7 @@
 package gcms.youtube2podcast
 
 import com.github.axet.vget.VGet
+import com.github.axet.vget.info.VideoFileInfo
 import org.apache.commons.io.FileUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.yaml.snakeyaml.util.UriEncoder
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -81,13 +83,61 @@ class Controller {
         return fileInfo.source.toString()
     }
 
+
+    @RequestMapping(value = "/files/{id}", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
+    public String files(@PathVariable String id) {
+        def url = new YouTubeVideoURL(id)
+        def vget = new VGet(new URL(url.URL))
+        def parser = new MyYouTubeParser()
+        vget.extract(parser, new AtomicBoolean(false)) {}
+
+
+        (parser.files.collect {
+            def result = "<a href=\"${it.url}\">${it.stream}</a>"
+            try {
+                VideoFileInfo fi = new VideoFileInfo(new URL(it.url.toString()))
+                fi.setReferer(new URL(new YouTubeVideoURL(id).URL))
+                fi.extract()
+
+                result += "<pre>${fi.properties as Map}</pre>"
+            } catch (Exception ex) {
+                result += ex.message
+            }
+            result
+        }).join("<br/>")
+    }
+
+    @RequestMapping(value = "/fileInfo", produces = MediaType.TEXT_HTML_VALUE)
+    public String fileInfo(@RequestParam String id, @RequestParam String url) {
+        try {
+            VideoFileInfo fi = new VideoFileInfo(new URL(url))
+            fi.setReferer(new URL(new YouTubeVideoURL(id).URL))
+            fi.extract()
+
+            return "<pre>${fi.dump()}</pre>"
+        } catch (Exception ex) {
+            return ex.message
+        }
+    }
+
+    @RequestMapping(value = "/list/{id}", produces = MediaType.TEXT_XML_VALUE)
+    public String getFeedForVideo(@PathVariable String id) {
+        log.info(request.headerNames.collect() { new MapEntry(it, request.getHeader(it)) }.toString())
+
+        rss.getFeedForVideo(new YouTubeVideoURL(id))
+    }
+
     @RequestMapping(value = "/feed")
     public void getFeed(@RequestParam("url") String url) {
+        log.info(request.headerNames.collect() { new MapEntry(it, request.getHeader(it)) }.toString())
+
         response.sendRedirect("/feed/${new YouTubePlaylistURL(url).id}")
     }
 
     @RequestMapping(value = "/feed/{id}", produces = MediaType.TEXT_XML_VALUE)
     public String feed(@PathVariable String id) {
+        log.info(request.headerNames.collect() { new MapEntry(it, request.getHeader(it)) }.toString())
+
         rss.getFeedAsString(id, baseURL)
     }
 
@@ -105,6 +155,7 @@ class Controller {
 
     @RequestMapping(value = "/audio/{id}", method = RequestMethod.GET)
     public void audio(@PathVariable String id) {
+        log.info(request.headerNames.collect() { new MapEntry(it, request.getHeader(it)) }.toString())
         String url = findUrl(id)
 
         response.sendRedirect(url)

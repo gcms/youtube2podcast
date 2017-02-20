@@ -16,6 +16,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class MyYouTubeParser extends YouTubeParser {
 
+    List<VideoDownload> files = []
+
     static class AverageQualityFirst implements Comparator<VideoDownload> {
         int isVideo(VideoDownload video) {
             video.stream instanceof StreamVideo ? 0 : 1
@@ -73,6 +75,9 @@ class MyYouTubeParser extends YouTubeParser {
 
         Collections.sort(videos, new AverageQualityFirst());
         Collections.sort(audios, new AverageQualityFirst());
+
+        files.addAll(videos)
+        files.addAll(audios)
 
         for (int i = 0; i < videos.size();) {
             VideoDownload v = videos.get(i);
