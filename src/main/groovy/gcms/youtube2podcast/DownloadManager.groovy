@@ -32,7 +32,17 @@ class DownloadManager {
                 task.run()
             } finally {
                 tasks.remove(id)
+                checkNotDownloading(id)
             }
+        }
+    }
+
+    private void checkNotDownloading(String id) {
+        def info = repo.getInfo(id)
+        if (info.status == VideoDownloadInfo.Status.DOWNLOADING) {
+            log.warn("${info.dump()} finished but still marked as DOWNLOADING")
+            info.status == VideoDownloadInfo.Status.NONE
+            enqueue(id)
         }
     }
 

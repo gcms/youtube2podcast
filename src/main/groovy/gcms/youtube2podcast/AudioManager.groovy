@@ -53,4 +53,8 @@ class AudioManager {
 
         log.info("Finished waiting for ${id}")
     }
+
+    boolean isDownloading(String id) {
+        downloadManager.getTask(id) != null
+    }
 }

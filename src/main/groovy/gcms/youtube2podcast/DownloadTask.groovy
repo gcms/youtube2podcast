@@ -1,10 +1,13 @@
 package gcms.youtube2podcast
 
 import com.github.axet.wget.info.ex.DownloadError
+import com.github.axet.wget.info.ex.DownloadInterruptedError
 import org.apache.commons.io.FileUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.Lock
@@ -61,28 +64,52 @@ class DownloadTask implements Runnable {
         if (info.status == VideoDownloadInfo.Status.DOWNLOADING && manager.getTask(id) != this)
             throw new IllegalArgumentException("${id} is already being downloaded")
 
-        info.status = VideoDownloadInfo.Status.DOWNLOADING
+        targetDir.mkdirs();
+        FileUtils.deleteDirectory(targetDir)
+        targetDir.mkdirs();
+
         info.downloadStart = new Date()
         repo.update(info)
 
         try {
-            targetDir.mkdirs();
-            FileUtils.deleteDirectory(targetDir)
-            targetDir.mkdirs();
+            def md = new MediaDownloader(url, targetDir)
 
-            DownloadedFile result = downloader.download(url, targetDir)
+            info.status = VideoDownloadInfo.Status.DOWNLOADING
+            info.file = md.extract()
+            repo.update(info)
+
+            DownloadedFile result = md.download()
+//            DownloadedFile result = downloader.download(url, targetDir)
 
             info.status = VideoDownloadInfo.Status.DOWNLOADED
             info.downloadFinish = new Date()
             info.file = result
+
+            def fileSize = FileUtils.sizeOf(info.file.path)
+            if (fileSize != info.file.mediaInfo.length) {
+                log.warn("File size (${fileSize}) differs from contentLength ($info.file.mediaInfo.length)")
+                info.file.mediaInfo.length = fileSize
+            }
+
             repo.update(info)
-        } catch (DownloadError error) {
+//
+//            def link = Paths.get(new File("/tmp/files/${id}").toURI())
+//            Files.createSymbolicLink(link, Paths.get(result.path.toURI()))
+
+        } catch (DownloadInterruptedError interrupt) {
+            log.warn("Download interrupted: ${interrupt}")
+            info.status = VideoDownloadInfo.Status.NONE
+            repo.update(info)
+        } catch(DownloadError error) {
+            log.warn("DownloadERROR: ${error}! Will make file UNAVAILABLE ${id}")
             info.status = VideoDownloadInfo.Status.UNAVAILABLE
+            info.error = error.toString()
             repo.update(info)
         } catch (IOException ex) {
             info.status = VideoDownloadInfo.Status.NONE
             repo.update(info)
-            manager.enqueue(id)  // Potentially buggy, still in downloading list
+            log.warn(ex.toString())
+//            manager.enqueue(id)  // Potentially buggy, still in downloading list
         }
     }
 

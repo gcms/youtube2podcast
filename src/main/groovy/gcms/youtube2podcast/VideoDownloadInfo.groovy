@@ -9,6 +9,7 @@ class VideoDownloadInfo {
     }
 
     String id
+    String error
 
     Date lastUpdated
 

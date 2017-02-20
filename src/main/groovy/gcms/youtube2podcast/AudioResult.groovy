@@ -9,7 +9,16 @@ class AudioResult {
     VideoDownloadInfo file
 
     MediaInfo getMediaInfo() {
-        file.file.mediaInfo
+        file?.file?.mediaInfo
+    }
+
+    boolean hasFile() {
+        file.status == VideoDownloadInfo.Status.DOWNLOADING && file.file && file.file.path.exists()
+    }
+
+    RandomAccessFile raf
+    RandomAccessFile getRaf() {
+        raf ?: (raf = new RandomAccessFile(file.file.path, "r"))
     }
 
     public enum Status {

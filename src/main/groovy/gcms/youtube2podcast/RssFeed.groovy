@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 @Service
 class RssFeed {
     @Autowired
-    FileManager fileManager
+    VideoDownloadInfoRepo repo
 
     Channel getFeed(YouTubePlaylistURL url, String hostname) {
         Channel channel = new Channel("rss_2.0");
@@ -48,15 +48,15 @@ class RssFeed {
             desc.setType("html");
             desc.setValue("<img src=\"${thumb}\"/>");
             item.setDescription(desc);
+            item.setLink(link);
 
             Enclosure enclosure = new Enclosure( );
-            link = "http://${hostname}/audio/${getId(link)}"
-            enclosure.setUrl(link);
+            enclosure.setUrl("http://${hostname}/audio/${getId(link)}");
 
-            MediaInfo info = fileManager.getFileInfo(getId(link));
-            if (info != null) {
-                enclosure.length = info.size
-                enclosure.type = info.contentType
+            VideoDownloadInfo info = repo.getInfo(getId(link));
+            if (info?.file?.mediaInfo != null) {
+                enclosure.length = info.file.mediaInfo.length
+                enclosure.type = info.file.mediaInfo.contentType
             }
             item.getEnclosures().add(enclosure);
 
