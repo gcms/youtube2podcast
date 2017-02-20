@@ -3,13 +3,18 @@
 APP_NAME=youtube2podcast
 APP_USER=web
 
-TARGET_JAR=/usr/web/$APP_NAME.jar
+TARGET_DIR=/usr/web/youtube2podcast
+TARGET_JAR=$TARGET_DIR/build/libs/$APP_NAME.jar
 
 BASEDIR=$(dirname $0)
-cd $BASEDIR
-sudo -u pi ./gradlew build
+cp -rvf $BASEDIR/ $TARGET_DIR
+sudo chown -R $APP_USER:$APP_USER $TARGET_DIR
 
-cp -v ./build/libs/$APP_NAME.jar $TARGET_JAR
+cd $TARGET_DIR
+
+sudo -u $APP_USER ./gradlew build
+
+#cp -v ./build/libs/$APP_NAME.jar $TARGET_JAR
 
 rm -f /etc/init.d/$APP_NAME
 ln -s $TARGET_JAR /etc/init.d/$APP_NAME
@@ -20,4 +25,4 @@ chmod 500 $TARGET_JAR
 systemctl daemon-reload
 
 service $APP_NAME status
-
+service $APP_NAME restart
