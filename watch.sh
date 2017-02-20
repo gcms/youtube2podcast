@@ -5,7 +5,7 @@ BASEDIR=$(dirname $0)
 cd $BASEDIR
 
 while :; do
-  check=$(./check.sh)
+  check=$(./checkAndDeploy.sh)
   if [ "$check" ]; then
     ./deploy.sh
   fi
