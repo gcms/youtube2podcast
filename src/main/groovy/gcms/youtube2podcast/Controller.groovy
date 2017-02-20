@@ -93,11 +93,6 @@ class Controller {
 
     @RequestMapping(value = "/audio/{id}", method = RequestMethod.HEAD)
     public void audioHeader(@PathVariable String id) {
-        String url = findUrl(id)
-
-        response.sendRedirect(url)
-        return
-
         response.setHeader('X-Application-Context', baseURL)
         def info = audio.queryFile(id)
 
@@ -110,6 +105,11 @@ class Controller {
 
     @RequestMapping(value = "/audio/{id}", method = RequestMethod.GET)
     public void audio(@PathVariable String id) {
+        String url = findUrl(id)
+
+        response.sendRedirect(url)
+        return
+
         log.info(request.headerNames.collect() { new MapEntry(it, request.getHeader(it)) }.toString())
 
         if (range != null) {
