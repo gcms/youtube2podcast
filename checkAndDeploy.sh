@@ -4,7 +4,7 @@ set -x
 
 
 
-check() {
+check () {
   GIT_URL="$1"
   PROJECT="$2"
   BUILD_DIR="$3"
