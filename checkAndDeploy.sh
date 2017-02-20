@@ -19,7 +19,6 @@ fi
 
 if [ -f "$BUILD_DIR/.build" ]; then
   cd "$BUILD_DIR"
-  echo $(sudo -u "$APP_USER" pwd)
   sudo -u "$APP_USER" ./gradlew build &&
   ./deploy.sh /usr/$APP_USER $APP_USER &&
   rm -f "$BUILD_DIR/.build"
