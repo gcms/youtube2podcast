@@ -1,5 +1,6 @@
 package gcms.youtube2podcast
 
+import com.github.axet.vget.VGet
 import org.apache.commons.io.FileUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.util.zip.GZIPOutputStream
@@ -68,6 +70,17 @@ class Controller {
         start.toInteger()..(end.isInteger() ? end.toInteger() : Integer.MAX_VALUE)
     }
 
+    @RequestMapping(value = "/url/{id}")
+    public String findUrl(@PathVariable String id) {
+        def url = new YouTubeVideoURL(id)
+        def vget = new VGet(new URL(url.URL))
+        vget.extract(new MyYouTubeParser(), new AtomicBoolean(false)) {}
+
+        def fileInfo = vget.video.info.last()
+
+        return fileInfo.source.toString()
+    }
+
     @RequestMapping(value = "/feed")
     public void getFeed(@RequestParam("url") String url) {
         response.sendRedirect("/feed/${new YouTubePlaylistURL(url).id}")
@@ -80,6 +93,11 @@ class Controller {
 
     @RequestMapping(value = "/audio/{id}", method = RequestMethod.HEAD)
     public void audioHeader(@PathVariable String id) {
+        String url = findUrl(id)
+
+        response.sendRedirect(url)
+        return
+
         response.setHeader('X-Application-Context', baseURL)
         def info = audio.queryFile(id)
 
