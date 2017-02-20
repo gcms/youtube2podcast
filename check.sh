@@ -1,14 +1,20 @@
 #!/bin/bash
 
-PROJECT=youtube2podcast
-GIT_URL=http://github.com/gcms/$PROJECT.git
+GIT_URL="$1"
+PROJECT="$2"
+BUILD_DIR="$3"
 
-if [ ! "$BUILD_DIR" ]; then
-  BUILD_DIR=/tmp/$USER/build/$PROJECT
+git config --global user.email "$USER@localhost"
+git config --global user.name "$USER"
+
+if [ ! "$GIT_URL" ] || [ ! "$PROJECT" ] || [ ! "$BUILD_DIR" ]; then
+  echo Usage: $0 GIT_URL PROJECT BUILD_DIR
+  exit 1
 fi
 
-if [ ! -d $BUILD_DIR ]; then
-  mkdir -p $BUILD_DIR
+
+if [ ! -d "$BUILD_DIR" ]; then
+  mkdir -p "$BUILD_DIR"
   cd $BUILD_DIR/..
   rmdir $BUILD_DIR
   git clone $GIT_URL
@@ -19,7 +25,8 @@ if [ ! -d $BUILD_DIR ]; then
 fi
 
 cd $BUILD_DIR
-GIT_PULL=$(git pull | egrep "Updating [A-Za-z0-9]+\.\.[A-Z0-9a-z]+")
+git fetch
+GIT_PULL=$(git merge | egrep "[A-Za-z0-9]+\.\.[A-Z0-9a-z]+")
 if [ "$GIT_PULL" ] && [ "$?" == "0"  ]; then
-  echo Updated
+  echo Updated: $GIT_PULL
 fi
