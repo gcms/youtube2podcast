@@ -1,17 +1,15 @@
 #!/bin/bash
 
 GIT_URL="$1"
-PROJECT="$2"
-BUILD_DIR="$3"
+BUILD_DIR="$2"
 
 git config --global user.email "$USER@localhost"
 git config --global user.name "$USER"
 
-if [ ! "$GIT_URL" ] || [ ! "$PROJECT" ] || [ ! "$BUILD_DIR" ]; then
-  echo Usage: $0 GIT_URL PROJECT BUILD_DIR
+if [ ! "$GIT_URL" ] || [ ! "$BUILD_DIR" ]; then
+  echo Usage: $0 GIT_URL BUILD_DIR
   exit 1
 fi
-
 
 if [ ! -d "$BUILD_DIR" ]; then
   mkdir -p "$BUILD_DIR"
