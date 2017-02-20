@@ -82,7 +82,7 @@ class RssFeed {
 
         String playlistTitle = doc.select(".pl-header-title").text();
         String playlistAuthor = doc.select(".pl-header-details a:first-child").text()
-        String playlistThumb = doc.select(".pl-header-thumb img").attr('src')
+        String playlistThumb = doc.select(".channel-header-profile-image").attr('src')
 
 
         channel.setLink(url.getURL());

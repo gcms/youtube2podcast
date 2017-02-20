@@ -1,29 +1,20 @@
 package gcms.youtube2podcast
-
 import com.github.axet.vget.VGet
 import com.github.axet.vget.info.VideoFileInfo
 import com.github.axet.vget.vhs.YouTubeInfo
 import com.github.axet.vget.vhs.YouTubeParser
-import org.apache.commons.io.FileUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.util.StreamUtils
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
-import org.yaml.snakeyaml.util.UriEncoder
+import org.springframework.web.bind.annotation.*
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-import java.util.zip.GZIPOutputStream
-
 /**
  * Created by gustavo on 19/02/17.
  */
