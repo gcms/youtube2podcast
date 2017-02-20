@@ -29,7 +29,7 @@ fi
 
 TARGET_JAR=$TARGET_DIR/build/libs/$APP_NAME.jar
 
-cp -rvf $BASEDIR/ $TARGET_DIR
+cp -Trvf $BASEDIR/ $TARGET_DIR
 chown -R $APP_USER:$APP_USER $TARGET_DIR
 
 rm -f /etc/init.d/$APP_NAME
