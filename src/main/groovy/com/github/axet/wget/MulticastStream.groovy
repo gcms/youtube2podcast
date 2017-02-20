@@ -1,13 +1,12 @@
 package com.github.axet.wget
 
-import com.sun.deploy.util.OrderedHashSet
 
 /**
  * Created by gustavo on 20/02/17.
  */
 class MulticastStream extends OutputStream {
 
-    private Set<OutputStream> streams = new OrderedHashSet<>();
+    private Set<OutputStream> streams = new HashSet<>();
 
     MulticastStream(Set<OutputStream> streams) {
         this.streams.addAll(streams)
