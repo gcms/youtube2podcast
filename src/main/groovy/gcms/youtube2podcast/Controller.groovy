@@ -2,6 +2,8 @@ package gcms.youtube2podcast
 
 import com.github.axet.vget.VGet
 import com.github.axet.vget.info.VideoFileInfo
+import com.github.axet.vget.vhs.YouTubeInfo
+import com.github.axet.vget.vhs.YouTubeParser
 import org.apache.commons.io.FileUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -72,15 +74,26 @@ class Controller {
         start.toInteger()..(end.isInteger() ? end.toInteger() : Integer.MAX_VALUE)
     }
 
-    @RequestMapping(value = "/url/{id}")
-    public String findUrl(@PathVariable String id) {
-        def url = new YouTubeVideoURL(id)
+    List<YouTubeParser.VideoDownload> getFiles(YouTubeVideoURL url) {
+        def parser = new MyYouTubeParser()
         def vget = new VGet(new URL(url.URL))
-        vget.extract(new MyYouTubeParser(), new AtomicBoolean(false)) {}
+        vget.extract(parser, new AtomicBoolean(false)) {}
 
-        def fileInfo = vget.video.info.last()
+        return parser.files
+    }
 
-        return fileInfo.source.toString()
+    public YouTubeParser.VideoDownload findUrl(@PathVariable String id) {
+        def url = new YouTubeVideoURL(id)
+        def files = getFiles(url)
+
+
+        String ua = request.getHeader('User-Agent')
+        log.info ("User agent: ${ua}")
+
+        if (ua != null && ua.contains('Beyond'))
+            return files.find { it.stream instanceof YouTubeInfo.StreamCombined && it.stream.c == YouTubeInfo.Container.GP3}
+
+        files.find { it.stream instanceof YouTubeInfo.StreamAudio } ?: files.find { it.stream instanceof YouTubeInfo.StreamCombined }
     }
 
 
@@ -143,6 +156,8 @@ class Controller {
 
     @RequestMapping(value = "/audio/{id}", method = RequestMethod.HEAD)
     public void audioHeader(@PathVariable String id) {
+        logRequest()
+
         response.setHeader('X-Application-Context', baseURL)
         def info = audio.queryFile(id)
 
@@ -153,15 +168,26 @@ class Controller {
         }
     }
 
+    public void logRequest() {
+        log.info(request.requestURI + " " + request.headerNames.toList().collectEntries() {
+            new MapEntry(it, request.getHeader(it))
+        })
+    }
+
+    public void logReponse() {
+        log.info(response.status +  " " + response.headerNames.toList().collectEntries() {
+            new MapEntry(it, response.getHeader(it))
+        })
+    }
+
     @RequestMapping(value = "/audio/{id}", method = RequestMethod.GET)
     public void audio(@PathVariable String id) {
-        log.info(request.headerNames.collect() { new MapEntry(it, request.getHeader(it)) }.toString())
-        String url = findUrl(id)
+        logRequest()
+        String url = findUrl(id).url
 
         response.sendRedirect(url)
         return
 
-        log.info(request.headerNames.collect() { new MapEntry(it, request.getHeader(it)) }.toString())
 
         if (range != null) {
             sendPartial(audio.queryFile(id), range)
@@ -209,7 +235,7 @@ class Controller {
 
             StreamUtils.copyRange(new BufferedInputStream(action.stream), response.outputStream, start, end)
 
-        log.info(response.headerNames.collect() { new MapEntry(it, response.getHeader(it)) }.toString())
+        logResponse()
     }
 
     private boolean canResolve(String id, AudioResult action) {
